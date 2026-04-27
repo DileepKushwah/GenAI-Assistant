@@ -1,7 +1,6 @@
 [build]
 builder = "dockerfile"
-dockerfilePath = "Dockerfile"
+dockerfilePath = "Dockerfile"  # Remove "app/" from the beginning
 
 [deploy]
 startCommand = "python -m uvicorn main:app --host 0.0.0.0 --port $PORT"
-restartPolicyType = "on_failure"
