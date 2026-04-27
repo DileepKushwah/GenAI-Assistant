@@ -1,0 +1,73 @@
+<<<<<<< HEAD
+version: "3.9"
+
+services:
+
+  api:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: genai_api
+    restart: unless-stopped
+    env_file:
+      - ./app/.env             # loads GEMINI_API_KEY from app/.env (gitignored)
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}   # fallback: host shell env var
+    expose:
+      - "8000"
+    networks:
+      - genai_net
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: genai_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+    networks:
+      - genai_net
+
+networks:
+  genai_net:
+    driver: bridge
+=======
+version: "3.9"
+
+services:
+
+  api:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: genai_api
+    restart: unless-stopped
+    env_file:
+      - ./app/.env             # loads GEMINI_API_KEY from app/.env (gitignored)
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}   # fallback: host shell env var
+    expose:
+      - "8000"
+    networks:
+      - genai_net
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: genai_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+    networks:
+      - genai_net
+
+networks:
+  genai_net:
+    driver: bridge
+>>>>>>> c2b5842691f39093114ebaf5d59c68d7d19b3d9e

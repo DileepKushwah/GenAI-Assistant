@@ -1,0 +1,102 @@
+# ─── Secrets / Environment ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example        # allow the example template to be committed
+app/.env             # FastAPI app env (contains encoded API key)
+
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+MANIFEST
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+nosetests.xml
+pytest.xml
+
+# ─── Virtual Environments ────────────────────────────────────────────────────
+venv/
+env/
+.venv/
+ENV/
+app/venv/            # venv nested inside /app
+
+# ─── Data / Uploads / Runtime files ─────────────────────────────────────────
+chat_history.csv
+*.csv
+uploads/
+*.pdf                # uploaded PDFs should not be committed
+faiss_index/
+*.faiss
+*.index
+
+# ─── Docker ──────────────────────────────────────────────────────────────────
+# Keep docker-compose.yml and Dockerfile tracked.
+# Ignore local override files only:
+docker-compose.override.yml
+docker-compose.local.yml
+.dockerignore.local
+
+# ─── IDE / Editor ────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.spyderproject
+.spyproject
+.ropeproject
+*.code-workspace
+
+# ─── OS ──────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+logs/
+nginx/logs/
+
+# ─── Plans (work-in-progress docs, not for repo) ─────────────────────────────
+plans/
+PLANS.md
+TODO.local.md
+
+# ─── Node (if frontend ever added) ──────────────────────────────────────────
+node_modules/
+.npm
+.yarn/
+
+# ─── Jupyter / IPython ──────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ─── Misc ────────────────────────────────────────────────────────────────────
+*.bak
+*.swp
+*.swo
+*.tmp
+<<<<<<< HEAD
+*.orig
+=======
+*.orig
+>>>>>>> c2b5842691f39093114ebaf5d59c68d7d19b3d9e
