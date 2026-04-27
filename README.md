@@ -378,6 +378,6 @@ GenAI-Assistant/
 └── summary_memory.py
 
 
-deployment: https://multigenai.streamlit.app/
+deployment: genai-assistant-production-e68b.up.railway.app
 >>>>>>> f04cdbf53083f166b66f2c5579f5f90eb9050980
 >>>>>>> c2b5842691f39093114ebaf5d59c68d7d19b3d9e
