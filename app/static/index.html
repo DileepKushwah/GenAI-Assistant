@@ -4,22 +4,23 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>GenAI Assistant</title>
+<meta name="description" content="GenAI Assistant - Multimodal AI with RAG, YouTube summarization, and memory-aware chat.">
 <style>
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface2: #22263a;
-    --border: #2e3248;
-    --accent: #6366f1;
-    --accent2: #818cf8;
-    --text: #e2e8f0;
-    --muted: #94a3b8;
-    --user-bubble: #312e81;
-    --bot-bubble: #1e293b;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface2: #f1f5f9;
+    --border: #e2e8f0;
+    --accent: #2563eb;
+    --accent2: #3b82f6;
+    --text: #0f172a;
+    --muted: #64748b;
+    --user-bubble: #2563eb;
+    --bot-bubble: #f1f5f9;
     --success: #10b981;
     --danger: #ef4444;
     --warning: #f59e0b;
-    --radius: 12px;
+    --radius: 10px;
     --font: 'Inter', system-ui, sans-serif;
   }
 
@@ -37,19 +38,72 @@
   /* ── SIDEBAR ── */
   .sidebar {
     width: 260px;
-    background: var(--surface);
+    background: var(--surface2);
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 50;
+  }
+
+  /* Desktop sidebar hidden */
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+    border-right: none;
+  }
+
+  /* ── SIDEBAR TOGGLE BUTTON ── */
+  .sidebar-toggle {
+    position: fixed;
+    top: 0.85rem;
+    left: 0.75rem;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(8px);
+  }
+  .sidebar-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  }
+  .sidebar-toggle:active {
+    transform: scale(0.95);
+  }
+  .sidebar-toggle .toggle-icon {
+    transition: transform 0.3s ease;
+    line-height: 1;
+  }
+  .sidebar-toggle.is-open .toggle-icon {
+    transform: rotate(90deg);
   }
 
   .sidebar-logo {
-    padding: 1.25rem 1rem 1rem;
+    padding: 1rem 1rem 1rem 3.5rem;
     border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 60px;
   }
-  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--accent2); }
-  .sidebar-logo p  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .sidebar-logo h1 { font-size: 15px; font-weight: 600; color: var(--accent2); line-height: 1.2; }
+  .sidebar-logo p  { font-size: 10px; color: var(--muted); margin-top: 2px; }
 
   .nav { padding: 0.75rem 0.5rem; }
   .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; padding: 0.5rem 0.75rem 0.25rem; }
@@ -68,7 +122,7 @@
     transition: all 0.15s;
     text-align: left;
   }
-  .nav-btn:hover  { background: var(--surface2); color: var(--text); }
+  .nav-btn:hover  { background: rgba(0, 0, 0, 0.04); color: var(--text); }
   .nav-btn.active { background: var(--accent); color: #fff; }
   .nav-btn .icon  { font-size: 16px; width: 20px; text-align: center; }
 
@@ -96,7 +150,7 @@
     gap: 6px;
     border: 1px solid transparent;
   }
-  .history-item:hover { background: var(--surface2); color: var(--text); border-color: var(--border); }
+  .history-item:hover { background: rgba(0, 0, 0, 0.04); color: var(--text); border-color: var(--border); }
   .history-item .hi-role { font-size: 10px; color: var(--accent2); flex-shrink: 0; margin-top: 1px; }
   .history-item .hi-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .history-empty { font-size: 12px; color: var(--muted); padding: 0.75rem; text-align: center; }
@@ -132,10 +186,12 @@
 
   /* ── MAIN ── */
   .main {
+    background: var(--surface);
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .topbar {
@@ -195,8 +251,8 @@
     line-height: 1.6;
     white-space: pre-wrap;
   }
-  .msg.user .msg-bubble { background: var(--user-bubble); border-radius: var(--radius) 4px var(--radius) var(--radius); }
-  .msg.bot  .msg-bubble { background: var(--bot-bubble); border: 1px solid var(--border); border-radius: 4px var(--radius) var(--radius) var(--radius); }
+  .msg.user .msg-bubble { background: var(--user-bubble); color: #fff; border-radius: var(--radius) 4px var(--radius) var(--radius); }
+  .msg.bot  .msg-bubble { background: var(--bot-bubble); border: 1px solid var(--border); color: var(--text); border-radius: 4px var(--radius) var(--radius) var(--radius); }
 
   .chat-input-area {
     padding: 1rem 1.5rem;
@@ -411,7 +467,7 @@
   .summary-header .yt-badge {
     font-size: 10px; padding: 2px 8px;
     border-radius: 20px;
-    background: #ef4444;
+    background: var(--accent);
     color: #fff;
   }
 
@@ -536,6 +592,121 @@
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* ── MOBILE RESPONSIVE ── */
+  @media (max-width: 768px) {
+    body { flex-direction: column; }
+    
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100vh;
+      flex-direction: column;
+      z-index: 150;
+      transform: translateX(-100%);
+      border-right: 1px solid var(--border);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sidebar.mobile-open {
+      transform: translateX(0);
+    }
+    .sidebar.collapsed {
+      transform: translateX(-100%);
+      width: 280px;
+    }
+    
+    .sidebar-logo { padding: 1rem; border-bottom: 1px solid var(--border); }
+    .sidebar-logo h1 { font-size: 15px; }
+    .sidebar-logo p { display: none; }
+    
+    .nav { padding: 0.5rem; }
+    .nav-label { display: block; }
+    .nav-btn { padding: 0.5rem 0.75rem; font-size: 13px; }
+    .nav-btn .icon { font-size: 15px; }
+    
+    .history-section, .memory-stats, .btn-clear-history, .sidebar-footer { display: block; }
+    
+    .main { margin-top: 0; height: 100vh; }
+    
+    .topbar { padding-left: 4rem; } /* Make room for toggle on mobile */
+    .topbar h2 { font-size: 13px; }
+    .topbar-right { gap: 4px; }
+    .topbar .badge { font-size: 10px; padding: 2px 6px; }
+    
+    .messages { padding: 1rem; }
+    .msg { max-width: 90%; }
+    .msg-bubble { font-size: 13px; padding: 0.5rem 0.75rem; }
+    
+    .chat-input-area { padding: 0.75rem 1rem; }
+    
+    .pdf-layout { flex-direction: column; }
+    .pdf-left { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 1rem; }
+    .pdf-right { flex: 1; }
+    
+    .yt-layout { padding: 1rem; }
+    .yt-layout h3 { font-size: 16px; margin-bottom: 1rem; }
+    
+    .summary-card { margin-top: 1rem; }
+    
+    /* Toggle button (mobile & desktop) */
+    .sidebar-toggle {
+      position: fixed;
+      top: 0.75rem;
+      left: 0.75rem;
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+      z-index: 250; /* Ensure it appears above other elements */
+    }
+    .sidebar.mobile-open ~ .sidebar-toggle {
+      left: 0.75rem;
+    }
+    
+    /* Mobile overlay when sidebar is open */
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 140;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .sidebar-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  /* Desktop: adjust toggle position and topbar padding */
+  @media (min-width: 769px) {
+    .sidebar:not(.collapsed) ~ .sidebar-toggle {
+      left: 0.75rem;
+    }
+    .sidebar.collapsed ~ .sidebar-toggle {
+      left: 0.75rem;
+    }
+    /* Ensure topbar has relative positioning for absolute children */
+    .topbar { position: relative; }
+    
+    /* Ensure toggle button appears above other UI elements */
+    .sidebar-toggle { z-index: 250; }
+
+    .sidebar.collapsed ~ .main .topbar {
+      padding-left: 4rem;
+    }
+    .sidebar:not(.collapsed) ~ .main .topbar {
+      padding-left: 1.5rem;
+    }
+  }
+
+  /* Hide old mobile menu toggle */
+  .menu-toggle { display: none !important; }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -543,10 +714,9 @@
 <body>
 
 <!-- ── SIDEBAR ── -->
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <h1>GenAI Assistant</h1>
-    <p>Powered by Gemini Flash</p>
+    <h1></h1>
   </div>
 
   <nav class="nav">
@@ -582,8 +752,8 @@
 
   <button class="btn-clear-history" onclick="clearAll()">Clear History</button>
 
-  <div class="sidebar-footer">
-    <span class="status-dot"></span> API Connected
+  <div class="sidebar-footer" id="sidebar-footer">
+    <span class="status-dot"></span> Connected
   </div>
 </div>
 
@@ -718,6 +888,14 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<!-- Sidebar Toggle Button (works on both desktop & mobile) -->
+<button class="sidebar-toggle is-open" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+  <span class="toggle-icon">☰</span>
+</button>
+
+<!-- Mobile Overlay -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
 <script>
 const API = '';
 let sessionId = 'session_' + Math.random().toString(36).slice(2);
@@ -738,6 +916,58 @@ function switchPanel(name, btn) {
   const titles = { chat:'Chat Assistant', pdf:'PDF Document Q&A', youtube:'YouTube Summarizer' };
   document.getElementById('panel-title').textContent = titles[name];
 }
+
+// ── SIDEBAR TOGGLE (Desktop + Mobile) ─────────────────────────
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('sidebar-toggle');
+  const overlay = document.getElementById('sidebar-overlay');
+  const isMobile = window.innerWidth <= 768;
+
+  if (isMobile) {
+    // Mobile: slide in/out as overlay
+    const isOpen = sidebar.classList.contains('mobile-open');
+    if (isOpen) {
+      sidebar.classList.remove('mobile-open');
+      overlay.classList.remove('show');
+      toggleBtn.classList.remove('is-open');
+    } else {
+      sidebar.classList.add('mobile-open');
+      overlay.classList.add('show');
+      toggleBtn.classList.add('is-open');
+    }
+  } else {
+    // Desktop: collapse/expand
+    const isCollapsed = sidebar.classList.contains('collapsed');
+    if (isCollapsed) {
+      sidebar.classList.remove('collapsed');
+      toggleBtn.classList.add('is-open');
+    } else {
+      sidebar.classList.add('collapsed');
+      toggleBtn.classList.remove('is-open');
+    }
+  }
+}
+
+// Handle resize: reset sidebar state when switching between mobile/desktop
+window.addEventListener('resize', () => {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const toggleBtn = document.getElementById('sidebar-toggle');
+  
+  if (window.innerWidth > 768) {
+    // Switching to desktop
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('show');
+    if (!sidebar.classList.contains('collapsed')) {
+      toggleBtn.classList.add('is-open');
+    }
+  } else {
+    // Switching to mobile
+    sidebar.classList.remove('collapsed');
+    toggleBtn.classList.remove('is-open');
+  }
+});
 
 // ── AUTO RESIZE TEXTAREA ──────────────────────────────────────
 function autoResize(el) {
